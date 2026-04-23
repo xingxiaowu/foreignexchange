@@ -32,18 +32,18 @@ const COLUMN_INDEX = {
 }
 
 const tableColumns = [
-  { title: '地区号', key: 'regionCode', minWidth: 90 },
-  { title: '网点号', key: 'branchCode', minWidth: 90 },
-  { title: '网点号名称', key: 'branchName', minWidth: 220 },
-  { title: '申报号码', key: 'declarationNo', minWidth: 220 },
-  { title: '报送日期', key: 'reportDate', minWidth: 120 },
-  { title: '文件种类', key: 'fileType', minWidth: 160 },
-  { title: '币种', key: 'currency', minWidth: 130 },
-  { title: '金额', key: 'amount', minWidth: 120 },
-  { title: '折美元', key: 'usdAmount', minWidth: 120 },
-  { title: '客户类型', key: 'customerType', minWidth: 160 },
-  { title: '客户名称', key: 'customerName', minWidth: 180 },
-  { title: '对方名称', key: 'counterpartyName', minWidth: 180 },
+  { title: '地区号', key: 'regionCode', maxWidth: 5 },
+  { title: '网点号', key: 'branchCode', maxWidth: 5 },
+  { title: '网点号名称', key: 'branchName', maxWidth: 220 },
+  { title: '申报号码', key: 'declarationNo', maxWidth: 250 },
+  { title: '报送日期', key: 'reportDate', maxWidth: 10 },
+  { title: '文件种类', key: 'fileType', maxWidth: 20 },
+  { title: '币种', key: 'currency', maxWidth: 130 },
+  { title: '金额', key: 'amount', maxWidth: 120 },
+  { title: '折美元', key: 'usdAmount', maxWidth: 120 },
+  { title: '客户类型', key: 'customerType', maxWidth: 160 },
+  { title: '客户名称', key: 'customerName', maxWidth: 180 },
+  { title: '对方名称', key: 'counterpartyName', maxWidth: 180 },
 ]
 
 const sourceData = ref([])
@@ -166,10 +166,9 @@ async function parseWorkbook(file) {
     throw new Error('未检测到业务办理日期（F列）')
   }
 
-  const latestOperationDate = new Date(
-    Math.max(...operationDates.map((date) => date.getTime()))
-  )
-  const cutoffDate = new Date(latestOperationDate)
+  const now = new Date()
+  const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const cutoffDate = new Date(currentDate)
   cutoffDate.setFullYear(cutoffDate.getFullYear() - 1)
 
   const seenDeclarationNos = new Set()
@@ -179,6 +178,7 @@ async function parseWorkbook(file) {
   let removedByDuplicate = 0
 
   bodyRows.forEach((row, index) => {
+    // console.log(row[COLUMN_INDEX.H] + row[COLUMN_INDEX.F]);
     const operationDate = parseExcelDate(row[COLUMN_INDEX.F])
     if (!operationDate || operationDate < cutoffDate) {
       removedByDate += 1
@@ -212,7 +212,7 @@ async function parseWorkbook(file) {
       removedByCorporate,
       removedByDuplicate,
       keptRows: filteredRows.length,
-      latestOperationDate: formatDate(latestOperationDate),
+      latestOperationDate: formatDate(currentDate),
       cutoffDate: formatDate(cutoffDate),
     },
   }
@@ -291,9 +291,6 @@ function handleExport() {
 
 <template>
   <div class="page">
-    <div class="bg-shape bg-shape-left"></div>
-    <div class="bg-shape bg-shape-right"></div>
-
     <div class="container">
       <header class="hero">
         <h1>歪比巴卜外汇清洗机</h1>
@@ -364,13 +361,14 @@ function handleExport() {
 
       <NCard class="card" title="3. 结果表">
         <template v-if="displayedData.length">
-          <NDataTable
-            :columns="tableColumns"
-            :data="displayedData"
-            :bordered="false"
-            size="small"
-            :max-height="560"
-            :scroll-x="1800" />
+          <div class="table-wrap">
+            <NDataTable
+              :columns="tableColumns"
+              :data="displayedData"
+              :bordered="false"
+              size="small"
+              :max-height="560" />
+          </div>
         </template>
         <NEmpty v-else description="暂无数据，请先上传并处理表格" />
       </NCard>
@@ -381,45 +379,27 @@ function handleExport() {
 <style scoped>
 .page {
   min-height: 100vh;
-  padding: 28px 14px 36px;
+  padding: 20px 10px 28px;
   background:
     radial-gradient(circle at 8% 0%, rgba(13, 148, 136, 0.18), transparent 40%),
     radial-gradient(circle at 92% 100%, rgba(15, 23, 42, 0.14), transparent 36%),
     linear-gradient(165deg, #f6fbff 0%, #f8fafb 52%, #eef7ff 100%);
   position: relative;
-  overflow: hidden;
-}
-
-.bg-shape {
-  position: absolute;
-  z-index: 0;
-  border-radius: 50%;
-  filter: blur(3px);
-}
-
-.bg-shape-left {
-  width: 220px;
-  height: 220px;
-  left: -80px;
-  top: 120px;
-  background: rgba(8, 145, 178, 0.2);
-}
-
-.bg-shape-right {
-  width: 240px;
-  height: 240px;
-  right: -90px;
-  bottom: 70px;
-  background: rgba(3, 105, 161, 0.16);
+  overflow-x: hidden;
 }
 
 .container {
-  max-width: 1360px;
-  margin: 0 auto;
+  /* width: min(1360px, 100%); */
+  /* max-width: 1360px; */
+  /* margin: 0 auto; */
   position: relative;
   z-index: 1;
   display: grid;
   gap: 16px;
+}
+
+.container>* {
+  min-width: 0;
 }
 
 .hero {
@@ -443,9 +423,16 @@ function handleExport() {
 }
 
 .card {
+  min-width: 0;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(5px);
+}
+
+.table-wrap {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .stats-grid {
