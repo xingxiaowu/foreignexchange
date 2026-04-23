@@ -1,38 +1,24 @@
-# ForeignExchange
+前端专家模式
 
-This template should help get you started developing with Vue 3 in Vite.
+代码风格高内聚低耦合，UI简洁
 
-## Recommended IDE Setup
+页面参考图片
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+/参考/image.png
 
-## Recommended Browser Setup
+# 使用UI框架
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+naiveUI
 
-## Customize configuration
+# 需求
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-pnpm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-pnpm dev
-```
-
-### Compile and Minify for Production
-
-```sh
-pnpm build
-```
+1. 上传表格，表格数据例如`/参考/外汇数据查询.xlsx`
+2. 处理源数据，处理规则如下
+   2.1 剔除F列距离操作日一年以上的数据
+   2.2 剔除Q列对公用户的数据
+   2.3 剔除H列重复申报号的数据
+3. 保留剩下的数据，输出`地区号|网点号|网点号名称|申报号码|报送日期|文件种类|币种|金额|折美元|客户类型|客户名称|对方名称`
+   对应`B列|C列|E列|H列|J列|K列|N列|O列|P列|Q列|R列|S列`到页面的table上
+4. 处理后的数据即为源数据，所有后续网页的查询操作均基于此数据，点击重置也是去掉查询条件显示这份数据
+5. 支持通过`收款人/汇款人`名称查询结果并显示
+6. 支持导出当前显示数据
